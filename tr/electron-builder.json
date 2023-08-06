@@ -1,0 +1,76 @@
+{
+  "productName": "Video Hub App 3",
+  "appId": "com.videohubapp.videohubapp3",
+  "copyright": "Copyright © 2023 Boris Yakubchik",
+  "directories": {
+    "output": "release/"
+  },
+  "files": [
+    "**/*", 
+    "!**/*.ts", 
+    "!LICENSE.md", 
+    "!package.json", 
+    "!package-lock.json", 
+    "!src/", 
+    "!angular.json", 
+    "!tsconfig.json", 
+    "!tslint.json"
+  ],
+  "extraResources": [
+    {
+      "from": "src/assets/icons/mac/touch-bar",
+      "to": "assets"
+    }, 
+    {
+      "from": "remote",
+      "to": "remote"
+    }, 
+    {
+      "from": "src/assets/logo.png",
+      "to": "assets/logo.png"
+    }
+  ],
+  "win": {
+    "icon": "dist/favicon",
+    "asar": true,
+    "asarUnpack": [
+      "../node_modules/ffmpeg-static", 
+      "../node_modules/node-ffprobe-installer"
+    ],
+    "target": [
+      "nsis", 
+      "portable"
+    ]
+  },
+  "mac": {
+    "category": "public.app-category.video",
+    "target": {
+      "target": "dmg",
+      "arch": [
+        "x64", 
+        "arm64"
+      ]
+    },
+    "icon": "src/assets/icons.icns",
+    "asar": true,
+    "asarUnpack": [
+      "../node_modules/ffmpeg-static", 
+      "../node_modules/node-ffprobe-installer"
+    ]
+  },
+  "linux": {
+    "icon": "src/assets/icons.icns",
+    "target": [
+      "AppImage"
+    ]
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": true
+  },
+  "fileAssociations": {
+    "ext": "vha2",
+    "name": "Video Hub App 3 file",
+    "role": "Editor"
+  }
+}
