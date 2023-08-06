@@ -1,4 +1,4 @@
-import { GLOBALS } from './main-globals';
+import { GLOBALS } from "./main-globals";
 
 import * as path from 'path';
 
@@ -6,12 +6,12 @@ const express = require('express');
 // const bodyParser = require('body-parser'); ----------------------------- disabled
 const WebSocket = require('ws');
 
-import { ImageElement } from '../interfaces/final-object.interface';
+import { ImageElement } from "../interfaces/final-object.interface";
 
 const args = process.argv.slice(1);
 const serve: boolean = args.some(val => val === '--serve');
 
-import { RemoteSettings } from '../interfaces/settings-object.interface';
+import { RemoteSettings } from "../interfaces/settings-object.interface";
 
 // =================================================================================================
 
@@ -37,6 +37,14 @@ interface SocketMessage {
 }
 
 // =================================================================================================
+
+// transcode
+
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path.replace('app.asar', 'app.asar.unpacked');
+const spawn = require('child_process').spawn;
+const onFinished = require('on-finished');
+
+// ---
 
 export function setUpIpcForServer(ipc) {
 
@@ -94,16 +102,37 @@ function startTheServer(pathToServe: string, port: number): void {
   //   res.end();
   // });
 
+
   app.get('/video', (req, res) => {
-
+    const seekTime = req.query.seek || 0;
     const file = req.query.file || '';
-
-    if (file) {
-      console.log(file);
-      res.sendFile(file)
-    }
-
+    // see https://trac.ffmpeg.org/wiki/Encode/H.264#a2.Chooseapreset for more options
+    const ffmpeg = spawn(ffmpegPath, [
+      '-ss', seekTime,
+      '-i', file,
+      '-f', 'mp4',
+      '-crf', '17',
+      '-preset', 'ultrafast',
+      '-movflags', 'frag_keyframe+empty_moov+faststart',
+      '-frag_duration', '15',
+      'pipe:1'
+    ]);
+    res.writeHead(200, {
+      'Content-Type': 'video/mp4'
+    });
+    ffmpeg.stdout.pipe(res);
+    // error logging
+    ffmpeg.stderr.setEncoding('utf8');
+    ffmpeg.stderr.on('data', (data) => {
+        console.log(data);
+    });
+    onFinished(res, () => {
+      console.log('about to kill!');
+      ffmpeg.kill();
+    });
   });
+
+
 
   // Serve the Angular VHA remote control app
   app.use(express.static(remoteAppPath));
@@ -160,24 +189,24 @@ const socketMessageHandler = (message: string): void => {
   } catch {
     console.log('ERROR: message was not JSON encoded');
   }
-};
+}
 
 /**
  * Shut down the Express and WebSocket servers
  */
 function stopTheServers(): void {
-  if (serverRef && typeof serverRef.close === 'function') {
+  if (serverRef && typeof serverRef.close === "function") {
     serverRef.close();
     console.log('closed Express server');
   }
-  if (wss && typeof wss.close === 'function') {
+  if (wss && typeof wss.close === "function") {
     wss.close();
     console.log('closed Socket server');
   }
 }
 
 const { networkInterfaces, hostname } = require('os');
-const ip = require('ip');
+const ip = require("ip");
 
 /**
  * Log the user's IP
