@@ -72,7 +72,9 @@ import { WelcomeComponent } from './components/modal/welcome.component';
 import { WizardComponent } from './components/wizard/wizard.component';
 
 // Pipes
+import { AlphabetizeSourceFoldersPipe } from './pipes/alphabetize-source-folders.pipe';
 import { AlphabetPrefixPipe } from './pipes/alphabet-prefix.pipe';
+import { AutoTagSortPipe } from './pipes/auto-tag-sort.pipe';
 import { ButtonStylePipe } from './components/button/button-style.pipe';
 import { CountPipe } from './pipes/count.pipe';
 import { DeleteFilePipe } from './pipes/delete-file.pipe';
@@ -81,6 +83,7 @@ import { FileSearchPipe } from './pipes/file-search.pipe';
 import { FileSizeFilterPipe } from './pipes/file-size-filter.pipe';
 import { FileSizePipe } from './pipes/file-size.pipe';
 import { FolderArrowsPipe } from './pipes/folder-arrows.pipe';
+import { FolderSizePipe } from './pipes/folder-size.pipe';
 import { FolderViewPipe } from './pipes/folder-view.pipe';
 import { FuzzySearchPipe } from './pipes/fuzzy-search.pipe';
 import { HideOfflinePipe } from './pipes/hide-offline.pipe';
@@ -107,12 +110,13 @@ import { WrapperPipe } from './pipes/wrapper.pipe';
 import { YearFilterPipe } from './pipes/year-filter.pipe';
 import { YearPipe } from './pipes/year.pipe';
 
-
 @NgModule({
   declarations: [
     AddTagComponent,
+    AlphabetizeSourceFoldersPipe,
     AlphabetPrefixPipe,
     AppComponent,
+    AutoTagSortPipe,
     BreadcrumbsComponent,
     ButtonComponent,
     ButtonStylePipe,
@@ -128,6 +132,7 @@ import { YearPipe } from './pipes/year.pipe';
     FileSizePipe,
     FilmstripComponent,
     FolderArrowsPipe,
+    FolderSizePipe,
     FolderViewPipe,
     FullViewComponent,
     FuzzySearchPipe,
@@ -180,7 +185,7 @@ import { YearPipe } from './pipes/year.pipe';
     WordFrequencyPipe,
     WrapperPipe,
     YearFilterPipe,
-    YearPipe
+    YearPipe,
   ],
   imports: [
     AnQrcodeModule,

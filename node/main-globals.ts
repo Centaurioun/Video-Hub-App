@@ -1,4 +1,4 @@
-import { ScreenshotSettings, InputSources } from '../interfaces/final-object.interface';
+import type { ScreenshotSettings, InputSources } from '../interfaces/final-object.interface';
 
 export const GLOBALS: VhaGlobals = {
   angularApp: null,            // reference used to send messages back to Angular App
@@ -11,7 +11,7 @@ export const GLOBALS: VhaGlobals = {
   selectedOutputFolder: '',
   selectedSourceFolders: {},
   settingsPath: '',            // to differentiate between standard & Windows Portable settings location
-  version: '3.2.0',            // update it and the `package.json` version in tandem before release!               <---- !!!
+  version: '3.2.1',            // update it and the `package.json` version in tandem before release!               <---- !!!
   vhaFileVersion: 3,
   winRef: null,
   screenshotSettings: {

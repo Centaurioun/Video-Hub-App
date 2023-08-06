@@ -1,4 +1,4 @@
-import { SettingsButton } from './settings-buttons.interface';
+import type { SettingsButton } from './settings-buttons.interface';
 
 export type SettingsButtonKey = 'autoFileTags'
  | 'autoFolderTags'
@@ -15,9 +15,11 @@ export type SettingsButtonKey = 'autoFileTags'
  | 'duplicateSize'
  | 'durationFilter'
  | 'exclude'
+ | 'favorites'
  | 'fileIntersection'
  | 'fileUnion'
  | 'flatIcons'
+ | 'folderExclusion'
  | 'folderIntersection'
  | 'folderUnion'
  | 'fontSizeLarger'
@@ -52,16 +54,18 @@ export type SettingsButtonKey = 'autoFileTags'
  | 'showRecent'
  | 'showRecentlyPlayed'
  | 'showRelatedVideosTray'
- | 'showTagTray'
  | 'showTags'
+ | 'showTagTray'
  | 'showThumbnails'
  | 'showVideoNotes'
  | 'shuffleGalleryNow'
  | 'sizeFilter'
+ | 'sortAutoTags'
  | 'sortOptionAlphabetical'
  | 'sortOptionAlphabetical2'
  | 'sortOptionAspectRatio'
  | 'sortOptionCreated'
+ | 'sortOptionLastPlayed'
  | 'sortOptionFolderSize'
  | 'sortOptionFps'
  | 'sortOptionModified'
@@ -77,10 +81,10 @@ export type SettingsButtonKey = 'autoFileTags'
  | 'tagExclusion'
  | 'tagIntersection'
  | 'tagUnion'
- | 'timesPlayedFilter'
  | 'thumbAutoAdvance'
- | 'yearFilter'
- | 'videoNotes';
+ | 'timesPlayedFilter'
+ | 'videoNotes'
+ | 'yearFilter';
 
 // Add `SettingsButtons` items here so they show up in the buttons ribbon and in the settings
 // Each array separates buttons into their own button groups visually
@@ -91,6 +95,7 @@ export const SettingsButtonsGroups: SettingsButtonKey[][] = [
   [ // 1 - Search filters
     'folderUnion',
     'folderIntersection',
+    'folderExclusion',
     'fileUnion',
     'fileIntersection',
     'exclude',
@@ -116,6 +121,7 @@ export const SettingsButtonsGroups: SettingsButtonKey[][] = [
     'sortOptionTime',
     'sortOptionSize',
     'sortOptionTimesPlayed',
+    'sortOptionLastPlayed',
     'sortOptionStar',
     'sortOptionYear',
     'sortOptionModified',
@@ -163,6 +169,8 @@ export const SettingsButtonsGroups: SettingsButtonKey[][] = [
     'autoFileTags',
     'autoFolderTags',
     'showVideoNotes',
+    'sortAutoTags',
+    'favorites',
   ],
   [ // 9 - Thumbnails view
     'hoverScrub',
@@ -362,6 +370,15 @@ export const SettingsButtons: SettingsButtonsType = {
     title: 'BUTTONS.excludeHint',
     toggled: false
   },
+  'favorites': {
+    description: 'BUTTONS.favoritesDescription',
+    hidden: false,
+    iconName: 'icon-heart',
+    settingsHeading: 'SETTINGS.favorites',
+    moreInfo: 'BUTTONS.favoritesMoreInfo',
+    title: 'BUTTONS.favoritesHint',
+    toggled: false
+  },
   'fileIntersection': {
     description: 'BUTTONS.fileDescription',
     hidden: false,
@@ -383,6 +400,14 @@ export const SettingsButtons: SettingsButtonsType = {
     hidden: false,
     settingsHeading: 'SETTINGS.buttonStyle',
     title: 'BUTTONS.flatIconsHint',
+    toggled: false
+  },
+  'folderExclusion': {
+    description: 'BUTTONS.folderExclusionDescription',
+    hidden: true,
+    iconName: 'icon-folder-x',
+    moreInfo: 'BUTTONS.folderExclusionMoreInfo',
+    title: 'BUTTONS.folderExclusionHint',
     toggled: false
   },
   'folderIntersection': {
@@ -678,6 +703,14 @@ export const SettingsButtons: SettingsButtonsType = {
     title: 'BUTTONS.showVideoNotesHint',
     toggled: false
   },
+  'sortAutoTags':{
+    description: 'BUTTONS.sortAutoTagsDescription',
+    hidden: true,
+    iconName: 'icon-sort-auto-tags',
+    moreInfo: 'BUTTONS.sortAutoTagsMoreInfo',
+    title: 'BUTTONS.sortAutoTagsHint',
+    toggled: false
+  },
   'shuffleGalleryNow': {
     description: 'BUTTONS.shuffleGalleryNowDescription',
     hidden: false,
@@ -776,6 +809,13 @@ export const SettingsButtons: SettingsButtonsType = {
     description: 'BUTTONS.sortOptionTimesPlayedDescription',
     hidden: false,
     moreInfo: 'BUTTONS.sortOptionTimesPlayedMoreInfo',
+    title: '',
+    toggled: false
+  },
+  'sortOptionLastPlayed': {
+    description: 'BUTTONS.sortOptionLastPlayedDescription',
+    hidden: false,
+    moreInfo: 'BUTTONS.sortOptionLastPlayedMoreInfo',
     title: '',
     toggled: false
   },

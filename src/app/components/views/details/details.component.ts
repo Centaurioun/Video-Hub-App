@@ -1,13 +1,15 @@
-import { Component, Input, OnInit, ElementRef, ViewChild, Output, EventEmitter } from '@angular/core';
+import type { OnInit, ElementRef} from '@angular/core';
+import { Component, Input, ViewChild, Output, EventEmitter } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
-import { BehaviorSubject } from 'rxjs';
+import type { BehaviorSubject } from 'rxjs';
 
-import { ManualTagsService } from '../../tags-manual/manual-tags.service';
 import { FilePathService } from '../file-path.service';
+import { ManualTagsService } from '../../tags-manual/manual-tags.service';
 
-import { StarRating, ImageElement } from '../../../../../interfaces/final-object.interface';
-import { VideoClickEmit, RightClickEmit, TagEmit, RenameFileResponse } from '../../../../../interfaces/shared-interfaces';
+import type { StarRating, ImageElement } from '../../../../../interfaces/final-object.interface';
+import type { VideoClickEmit, RightClickEmit, TagEmit, RenameFileResponse } from '../../../../../interfaces/shared-interfaces';
+import { ImageElementService } from './../../../services/image-element.service';
 
 export interface YearEmission {
   index: number;
@@ -18,6 +20,7 @@ export interface YearEmission {
   selector: 'app-details-item',
   templateUrl: './details.component.html',
   styleUrls: [
+      '../time-and-rez.scss',
       './details.component.scss',
       '../selected.scss'
     ]
@@ -51,6 +54,7 @@ export class DetailsComponent implements OnInit {
   @Input() showManualTags: boolean;
   @Input() showMeta: boolean;
   @Input() showVideoNotes: boolean;
+  @Input() showFavorites: boolean;
   @Input() star: StarRating;
 
   @Input() renameResponse: BehaviorSubject<RenameFileResponse>;
@@ -59,11 +63,13 @@ export class DetailsComponent implements OnInit {
   filmstripPath = '';
   firstFilePath = '';
   hover: boolean;
-  indexToShow: number = 1;
-  percentOffset: number = 0;
+  indexToShow = 1;
+  percentOffset = 0;
+  starRatingHack: StarRating; // updates visuals of rating
 
   constructor(
     public filePathService: FilePathService,
+    public imageElementService: ImageElementService,
     public manualTagsService: ManualTagsService,
     public sanitizer: DomSanitizer
   ) { }
@@ -86,6 +92,12 @@ export class DetailsComponent implements OnInit {
 
   getDefaultScreenOffset(video: ImageElement): number {
     return 100 * video.defaultScreen / (video.screens - 1);
+  }
+
+  toggleHeart(): void {
+    this.imageElementService.toggleHeart(this.video.index);
+    this.starRatingHack = this.video.stars;
+    event.stopPropagation();
   }
 
   ngOnInit() {

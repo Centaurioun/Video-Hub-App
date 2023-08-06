@@ -6,22 +6,41 @@
  * the same way each time they run no matter the outside state
  */
 
-import { GLOBALS, VhaGlobals } from './main-globals'; // TODO -- eliminate dependence on `GLOBALS` in this file!
+import type { VhaGlobals } from './main-globals';
+import { GLOBALS } from './main-globals'; // TODO -- eliminate dependence on `GLOBALS` in this file!
 
 import * as path from 'path';
 
 const exec = require('child_process').exec;
-const ffprobePath = require('node-ffprobe-installer').path.replace('app.asar', 'app.asar.unpacked');
+const ffprobePath = require('@ffprobe-installer/ffprobe').path.replace('app.asar', 'app.asar.unpacked');
 const fs = require('fs');
 const hasher = require('crypto').createHash;
-import { Stats } from 'fs';
+import type { Stats } from 'fs';
 
-import { FinalObject, ImageElement, ScreenshotSettings, InputSources, ResolutionString, NewImageElement } from '../interfaces/final-object.interface';
+import type { FinalObject, ImageElement, ScreenshotSettings, InputSources, ResolutionString } from '../interfaces/final-object.interface';
+import { NewImageElement } from '../interfaces/final-object.interface';
 import { startFileSystemWatching, resetWatchers } from './main-extract-async';
 
 interface ResolutionMeta {
   label: ResolutionString;
   bucket: number;
+}
+
+interface ffprobeJSON {
+  streams: ffprobeStream[];
+  format: ffprobeFormat;
+}
+
+interface ffprobeStream {
+  width: number;
+  height: number;
+  duration?: string;
+  r_frame_rate?: string; // e.g. "25/1" or "30000/1001"
+}
+
+interface ffprobeFormat {
+  duration: string;
+  size: string;
 }
 
 export type ImportStage = 'importingMeta' | 'importingScreenshots' | 'done';
@@ -48,7 +67,7 @@ export function getHtmlPath(anyOsPath: string): string {
  */
 function labelVideo(width: number, height: number): ResolutionMeta {
   let label: ResolutionString = '';
-  let bucket: number = 0.5;
+  let bucket = 0.5;
   if (width === 3840 && height === 2160) {
     label = '4K';
     bucket = 3.5;
@@ -287,13 +306,14 @@ export function cleanUpFileName(original: string): string {
  *
  * @param metadata  the ffProbe metadata object
  */
-function getBestStream(metadata) {
+function getBestStream(metadata: ffprobeJSON): ffprobeStream {
   try {
+    // returns the stream with the greatest `width` property
     return metadata.streams.reduce((a, b) => a.width > b.width ? a : b);
   } catch (e) {
     // if metadata.streams is an empty array or something else is wrong with it
     // return an empty object so later calls to `stream.width` or `stream.height` do not throw exceptions
-    return {};
+    return {} as ffprobeStream;
   }
 }
 
@@ -301,24 +321,25 @@ function getBestStream(metadata) {
  * Return the duration from file by parsing metadata
  * @param metadata
  */
-function getFileDuration(metadata): number {
+function getFileDuration(metadata: ffprobeJSON): string {
   if (metadata?.streams?.[0]?.duration) {
-    
+
     return metadata.streams[0].duration;
 
   } else if (metadata?.format?.duration) {
 
     return   metadata.format.duration;
   } else {
-    return 0;
+    return "0";
   }
 }
 
-//Calculation of video bitrate in mb/s
-
-function getBitrate(fileSize,duration){
-  var bitrate = ((fileSize/1000)/duration)/1000;
-  return Math.round(bitrate*100)/100;
+/**
+ * Calculation of video bitrate in mb/s
+ */
+function getBitrate(fileSize: number, duration: number): number {
+  const bitrate = ((fileSize / 1000) / duration) / 1000;
+  return Math.round(bitrate * 100) / 100;
 }
 
 /**
@@ -330,7 +351,7 @@ function getBitrate(fileSize,duration){
  * ===========================================================================================
  * @param metadata
  */
- function getFps(metadata): number {
+ function getFps(metadata: ffprobeJSON): number {
    if (metadata?.streams?.[0]?.r_frame_rate) {
      const fps = metadata.streams[0].r_frame_rate;
      const fpsParts = fps.split('/');
@@ -404,7 +425,7 @@ function hashFileAsync(pathToFile: string, stats: Stats): Promise<string> {
       data = Buffer.alloc(sampleSize * 3);
       fs.open(pathToFile, 'r', (err, fd) => {
         fs.read(fd, data, 0, sampleSize, 0, (err2, bytesRead, buffer) => { // read beginning of file
-          fs.read(fd, data, sampleSize, sampleSize, fileSize / 2, (err3, bytesRead2, buffer2) => {
+          fs.read(fd, data, sampleSize, sampleSize, Math.floor(fileSize / 2), (err3, bytesRead2, buffer2) => {
             fs.read(fd, data, sampleSize * 2, sampleSize, fileSize - sampleSize, (err4, bytesRead3, buffer3) => {
               fs.close(fd, (err5) => {
                 // append the file size to the data
@@ -440,12 +461,12 @@ export function extractMetadataAsync(
       if (err) {
         reject();
       } else {
-        const metadata = JSON.parse(data);
+        const metadata: ffprobeJSON = JSON.parse(data);
         const stream = getBestStream(metadata);
         const fileDuration = getFileDuration(metadata);
         const realFps = getFps(metadata);
 
-        const duration = Math.round(fileDuration) || 0;
+        const duration = Math.round(parseInt(fileDuration, 10)) || 0;
         const origWidth = stream.width || 0; // ffprobe does not detect it on some MKV streams
         const origHeight = stream.height || 0;
 

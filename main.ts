@@ -137,7 +137,6 @@ function createWindow() {
       nodeIntegration: true,
       allowRunningInsecureContent: true,
       contextIsolation: false,
-      enableRemoteModule: true,
       webSecurity: false  // allow files from hard disk to show up
     },
     x: mainWindowState.x,
@@ -160,7 +159,9 @@ function createWindow() {
       electron: require(`${__dirname}/node_modules/electron`)
     });
     win.loadURL('http://localhost:4200');
-    win.webContents.openDevTools();
+    setTimeout(() => {
+      win.webContents.openDevTools();
+    }, 1000);
   } else {
     const url = require('url').format({
       pathname: path.join(__dirname, 'dist/index.html'),
@@ -185,9 +186,8 @@ function createWindow() {
   });
 
   win.on('close', (event) => {
-    if (GLOBALS.readyToQuit) {
-      app.exit();
-    } else {
+    if (!GLOBALS.readyToQuit) {
+      event.preventDefault();
       getAngularToShutDown();
     }
   });

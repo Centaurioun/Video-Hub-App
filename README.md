@@ -2,8 +2,6 @@
 
 [*Video Hub App 3*](https://videohubapp.com/) is the fastest way to browse and search for videos on your computer. Think of it like YouTube for videos on your computer: browse, search, and preview. Works on Windows, Mac, and Linux!
 
-Read in [Português (Brasileiro)](https://github.com/whyboris/Video-Hub-App/blob/master/README.br.md)
-
 
 ## Download Now
 
@@ -44,22 +42,24 @@ See [issues](https://github.com/whyboris/Video-Hub-App/issues) for what is in pr
 
 How to start:
 
-- `npm install` to install
+- `npm install` to install (you may need to run `npm install --legacy-peer-deps` if install fails)
 - `npm start` to develop
 - `npm run electron` to build
 
 Main dependencies in use:
 
-| Library          | Version  | Date            | Comment                                           |
-| ---------------- | -------- | --------------- | ------------------------------------------------- |
-| Angular          | v12.1.1  | July 2021       |                                                   |
-| Angular-CLI      | v12.1.1  | July 2021       |                                                   |
-| Electron         | v13.1.6  | July 2021       | (internally uses Node `v14.16.0` and Chromium 91) |
-| Electron Builder | v22.11.7 | July 2021       |                                                   |
+| Library          | Version   | Date           | Comment |
+| ---------------- | --------- | -------------- | ------- |
+| Angular          | v15.1.5   | Feb 2023       |         |
+| Angular-CLI      | v15.1.6   | Feb 2023       |         |
+| Electron         | v22.3.2   | Feb 2023       | (internally uses Node `v16.17.1` and Chromium 108) Do not upgrade because [version `23` no longer works with Windows 7](https://www.electronjs.org/blog/windows-7-to-8-1-deprecation-notice) |
+| Electron Builder | v23.6.0   | Feb 2023       |         |
 
-- **Node**: I recommend using the same version as _Electron_ uses internally, but any version 14 or above should work.
+- **Node**: It may be best to use the same version as _Electron_ uses internally, but consider `v18.12.1`.
 
 - **Angular CLI**: not required but may be useful: [Angular CLI](https://cli.angular.io).
+
+- **Mac**: We now have `M1` and `Intel` builds, but you may need to manually update the _FFmpeg_ and _FFprobe_ executables if you're building for a different architecture than you are on.
 
 To help debug a production build of VHA you can use [Debugtron](https://github.com/bytedance/debugtron)
 
@@ -80,8 +80,8 @@ This software would not be possible without the tremendous work by other people:
  - [FFmpeg](https://www.ffmpeg.org/)
  - [angular-electron](https://github.com/maximegris/angular-electron)
  - [ngx-virtual-scroller](https://github.com/rintoj/ngx-virtual-scroller)
- - [@ffmpeg-installer/ffmpeg](https://www.npmjs.com/package/@ffmpeg-installer/ffmpeg)
- - [@ffprobe-installer/ffprobe](https://www.npmjs.com/package/@ffprobe-installer/ffprobe)
+ - [ffmpeg-static](https://github.com/eugeneware/ffmpeg-static)
+ - [@ffprobe-installer/ffprobe](https://github.com/SavageCore/node-ffprobe-installer)
  - [ngx-translate](https://github.com/ngx-translate/core)
  - [fdir](https://github.com/thecodrr/fdir)
  - [async](https://github.com/caolan/async)

@@ -80,19 +80,17 @@
           }
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": [
-              "src/tsconfig.app.json",
-              "tsconfig.worker.json"
-            ],
-            "exclude": []
+            "eslintConfig": ".eslintrc.json",
+            "lintFilePatterns": [
+              "**/*.ts"
+            ]
           }
         }
       }
     }
   },
-  "defaultProject": "video-hub-app",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",

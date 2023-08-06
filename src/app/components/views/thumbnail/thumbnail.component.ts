@@ -1,23 +1,25 @@
-import { Component, Input, Output, EventEmitter, OnInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import type { OnInit, ElementRef, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 
 import { FilePathService } from '../file-path.service';
 
 import { metaAppear, textAppear } from '../../../common/animations';
 
-import { ImageElement } from '../../../../../interfaces/final-object.interface';
-import { VideoClickEmit, RightClickEmit } from '../../../../../interfaces/shared-interfaces';
+import { ImageElementService } from './../../../services/image-element.service';
+import type { ImageElement } from '../../../../../interfaces/final-object.interface';
+import type { VideoClickEmit, RightClickEmit } from '../../../../../interfaces/shared-interfaces';
 
 @Component({
   selector: 'app-thumbnail',
   templateUrl: './thumbnail.component.html',
   styleUrls: [
-      '../clip-and-preview.scss',
-      '../time-and-rez.scss',
-      './thumbnail.component.scss',
-      '../selected.scss'
-    ],
-  animations: [ textAppear,
-                metaAppear ]
+    '../clip-and-preview.scss',
+    '../time-and-rez.scss',
+    './thumbnail.component.scss',
+    '../selected.scss'
+  ],
+  animations: [textAppear,
+    metaAppear]
 })
 export class ThumbnailComponent implements OnInit, OnDestroy {
 
@@ -42,18 +44,20 @@ export class ThumbnailComponent implements OnInit, OnDestroy {
   @Input() returnToFirstScreenshot: boolean;
   @Input() showMeta: boolean;
   @Input() thumbAutoAdvance: boolean;
+  @Input() showFavorites: boolean;
 
   containerWidth: number;
   firstFilePath = '';
   folderThumbPaths: string[] = [];
   fullFilePath = '';
   hover: boolean;
-  indexToShow: number = 1;
-  percentOffset: number = 0;
+  indexToShow = 1;
+  percentOffset = 0;
   scrollInterval: any = null;
 
   constructor(
-    public filePathService: FilePathService
+    public filePathService: FilePathService,
+    public imageElementService: ImageElementService,
   ) { }
 
   ngOnInit() {
@@ -122,4 +126,8 @@ export class ThumbnailComponent implements OnInit, OnDestroy {
     clearInterval(this.scrollInterval);
   }
 
+  toggleHeart(): void {
+    this.imageElementService.toggleHeart(this.video.index);
+    event.stopPropagation();
+  }
 }

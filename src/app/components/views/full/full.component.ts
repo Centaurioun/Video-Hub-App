@@ -1,17 +1,20 @@
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import type { OnInit} from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 import { FilePathService } from '../file-path.service';
 
 import { metaAppear, textAppear } from '../../../common/animations';
 
-import { ImageElement } from '../../../../../interfaces/final-object.interface';
-import { RightClickEmit, VideoClickEmit } from '../../../../../interfaces/shared-interfaces';
+import type { ImageElement } from '../../../../../interfaces/final-object.interface';
+import { ImageElementService } from './../../../services/image-element.service';
+import type { RightClickEmit, VideoClickEmit } from '../../../../../interfaces/shared-interfaces';
 
 @Component({
   selector: 'app-full-item',
   templateUrl: './full.component.html',
   styleUrls: [
+      '../time-and-rez.scss',
       '../film-and-full.scss',
       '../selected.scss'
     ],
@@ -43,15 +46,17 @@ export class FullViewComponent implements OnInit {
   @Input() hubName: string;
   @Input() largerFont: boolean;
   @Input() showMeta: boolean;
+  @Input() showFavorites: boolean;
 
   _imgHeight: number;
   _metaWidth: number;
   computedWidth: number;
-  fullFilePath: string = '';
+  fullFilePath = '';
   rowOffsets: number[];
 
   constructor(
     public filePathService: FilePathService,
+    public imageElementService: ImageElementService,
     public sanitizer: DomSanitizer
   ) { }
 
@@ -69,5 +74,10 @@ export class FullViewComponent implements OnInit {
     for (let i = 0; i < numOfRows; i++) {
       this.rowOffsets.push(i * Math.floor(this._metaWidth / imgWidth));
     }
+  }
+
+  toggleHeart(): void {
+    this.imageElementService.toggleHeart(this.video.index);
+    event.stopPropagation();
   }
 }

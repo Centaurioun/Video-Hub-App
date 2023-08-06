@@ -1,12 +1,14 @@
-import { Component, Input, OnInit, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
+import type { OnInit, ElementRef} from '@angular/core';
+import { Component, Input, ViewChild, Output, EventEmitter } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 import { FilePathService } from '../file-path.service';
 
 import { metaAppear, textAppear } from '../../../common/animations';
 
-import { ImageElement } from '../../../../../interfaces/final-object.interface';
-import { RightClickEmit, VideoClickEmit } from '../../../../../interfaces/shared-interfaces';
+import type { ImageElement } from '../../../../../interfaces/final-object.interface';
+import { ImageElementService } from './../../../services/image-element.service';
+import type { RightClickEmit, VideoClickEmit } from '../../../../../interfaces/shared-interfaces';
 
 @Component({
   selector: 'app-filmstrip-item',
@@ -14,7 +16,8 @@ import { RightClickEmit, VideoClickEmit } from '../../../../../interfaces/shared
   styleUrls: [
       '../film-and-full.scss',
       '../time-and-rez.scss',
-      '../selected.scss'
+      '../selected.scss',
+      './filmstrip.component.scss'
     ],
   animations: [ textAppear,
                 metaAppear ]
@@ -28,6 +31,7 @@ export class FilmstripComponent implements OnInit {
 
   @Input() video: ImageElement;
 
+  @Input() compactView: boolean;
   @Input() darkMode: boolean;
   @Input() elHeight: number;
   @Input() folderPath: string;
@@ -36,13 +40,15 @@ export class FilmstripComponent implements OnInit {
   @Input() imgHeight: number;
   @Input() largerFont: boolean;
   @Input() showMeta: boolean;
+  @Input() showFavorites: boolean;
 
-  fullFilePath: string = '';
-  filmXoffset: number = 0;
-  indexToShow: number = 1;
+  fullFilePath = '';
+  filmXoffset = 0;
+  indexToShow = 1;
 
   constructor(
     public filePathService: FilePathService,
+    public imageElementService: ImageElementService,
     public sanitizer: DomSanitizer
   ) { }
 
@@ -60,5 +66,10 @@ export class FilmstripComponent implements OnInit {
       this.indexToShow = Math.floor(cursorX * (this.video.screens / containerWidth));
       this.filmXoffset = imgWidth * Math.floor(cursorX / (containerWidth / howManyScreensOutsideCutoff));
     }
+  }
+
+  toggleHeart(): void {
+    this.imageElementService.toggleHeart(this.video.index);
+    event.stopPropagation();
   }
 }
