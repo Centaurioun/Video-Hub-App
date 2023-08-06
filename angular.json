@@ -24,21 +24,18 @@
               "src/styles.scss"
             ],
             "scripts": [],
-            "webWorkerTsConfig": "tsconfig.worker.json",
-            "aot": false,
-            "vendorChunk": true,
-            "extractLicenses": false,
-            "buildOptimizer": false,
-            "sourceMap": true,
-            "optimization": false,
-            "namedChunks": true
+            "webWorkerTsConfig": "tsconfig.worker.json"
           },
           "configurations": {
             "dev": {
+              "optimization": false,
               "outputHashing": "all",
+              "sourceMap": true,
               "namedChunks": false,
+              "aot": false,
               "extractLicenses": true,
               "vendorChunk": false,
+              "buildOptimizer": false,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -62,8 +59,7 @@
                 }
               ]
             }
-          },
-          "defaultConfiguration": ""
+          }
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -82,15 +78,18 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "eslintConfig": ".eslintrc.json",
-            "lintFilePatterns": [
-              "**/*.ts"
-            ]
+            "eslintConfig": "eslintrc.json",
+            "tsConfig": [
+              "src/tsconfig.app.json",
+              "tsconfig.worker.json"
+            ],
+            "exclude": []
           }
         }
       }
     }
   },
+  "defaultProject": "video-hub-app",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",
