@@ -77,6 +77,7 @@ export type SettingsButtonKey = 'autoFileTags'
  | 'sortOptionTimesPlayed'
  | 'sortOptionYear'
  | 'sortOrder'
+ | 'spacePlaysRandom'
  | 'starFilter'
  | 'startWizard'
  | 'tagExclusion'
@@ -204,6 +205,7 @@ export const SettingsButtonsGroups: SettingsButtonKey[][] = [
     'showDeleteOption',
     'dangerousDelete',
     'playPlaylist',
+    'spacePlaysRandom',
     'openAtTimestamp',
   ]
 ];
@@ -772,7 +774,13 @@ export const SettingsButtons: SettingsButtonsType = {
     title: '',
     toggled: false
   },
-
+  'spacePlaysRandom': {
+    description: 'BUTTONS.spacePlaysRandomDescription',
+    hidden: false,
+    moreInfo: 'BUTTONS.spacePlaysRandomMoreInfo',
+    title: '',
+    toggled: false
+  },
   'sortOptionFps': {
     description: 'BUTTONS.sortOptionFpsDescription',
     hidden: false,
