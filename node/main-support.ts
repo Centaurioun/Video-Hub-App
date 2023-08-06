@@ -4,43 +4,34 @@
  * There should be no side-effects of running any of them
  * They should depend only on their inputs and behave exactly
  * the same way each time they run no matter the outside state
+ *
+ * !!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!
+ * DANGEROUSLY DEPENDS ON `codeRunningOnMac` when extracting metadata
+ * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  */
 
-import type { VhaGlobals } from './main-globals';
-import { GLOBALS } from './main-globals'; // TODO -- eliminate dependence on `GLOBALS` in this file!
+const codeRunningOnMac: boolean = process.platform === 'darwin'; // <---- MAKES MANY FUNCTIONS NOT PURE !!!!
+
+import * as path from 'path';
+
+const fs = require('fs');
+
+import { GLOBALS, VhaGlobals } from './main-globals'; // TODO -- eliminate dependence on `GLOBALS` in this file!
 
 import * as path from 'path';
 
 const exec = require('child_process').exec;
-const ffprobePath = require('@ffprobe-installer/ffprobe').path.replace('app.asar', 'app.asar.unpacked');
+const ffprobePath = require('ffprobe-static').path.replace('app.asar', 'app.asar.unpacked');
 const fs = require('fs');
 const hasher = require('crypto').createHash;
-import type { Stats } from 'fs';
+import { Stats } from 'fs';
 
-import type { FinalObject, ImageElement, ScreenshotSettings, InputSources, ResolutionString } from '../interfaces/final-object.interface';
-import { NewImageElement } from '../interfaces/final-object.interface';
+import { FinalObject, ImageElement, ScreenshotSettings, InputSources, ResolutionString, NewImageElement } from '../interfaces/final-object.interface';
 import { startFileSystemWatching, resetWatchers } from './main-extract-async';
 
 interface ResolutionMeta {
   label: ResolutionString;
   bucket: number;
-}
-
-interface ffprobeJSON {
-  streams: ffprobeStream[];
-  format: ffprobeFormat;
-}
-
-interface ffprobeStream {
-  width: number;
-  height: number;
-  duration?: string;
-  r_frame_rate?: string; // e.g. "25/1" or "30000/1001"
-}
-
-interface ffprobeFormat {
-  duration: string;
-  size: string;
 }
 
 export type ImportStage = 'importingMeta' | 'importingScreenshots' | 'done';
@@ -67,7 +58,7 @@ export function getHtmlPath(anyOsPath: string): string {
  */
 function labelVideo(width: number, height: number): ResolutionMeta {
   let label: ResolutionString = '';
-  let bucket = 0.5;
+  let bucket: number = 0.5;
   if (width === 3840 && height === 2160) {
     label = '4K';
     bucket = 3.5;
@@ -136,7 +127,6 @@ function getFileSizeDisplay(sizeInBytes: number): string {
  * Generate duration formatted as X:XX:XX
  * @param numOfSec
  */
-
 function getDurationDisplay(numOfSec: number): string {
 
   if (numOfSec === undefined || numOfSec === 0) {
@@ -188,7 +178,7 @@ function markDuplicatesAsDeleted(imagesArray: ImageElement[]): ImageElement[] {
       && element.inputSource === currentElement.inputSource
     ) {
       element.deleted = true;
-      console.log('DUPE FOUND: ' + element.fileName);
+      console.log('DUPE FOUND: '+ element.fileName);
     }
     currentElement = element;
   });
@@ -298,7 +288,7 @@ export function cleanUpFileName(original: string): string {
   return original.split('.').slice(0, -1).join('.')   // (1)
                  .split('_').join(' ')                // (2)
                  .split('.').join(' ')                // (3)
-                 .split(/\s+/).join(' ');             // (4)
+                 .split(/\s+/).join(' ')              // (4)
 }
 
 /**
@@ -306,14 +296,13 @@ export function cleanUpFileName(original: string): string {
  *
  * @param metadata  the ffProbe metadata object
  */
-function getBestStream(metadata: ffprobeJSON): ffprobeStream {
+function getBestStream(metadata) {
   try {
-    // returns the stream with the greatest `width` property
     return metadata.streams.reduce((a, b) => a.width > b.width ? a : b);
   } catch (e) {
     // if metadata.streams is an empty array or something else is wrong with it
     // return an empty object so later calls to `stream.width` or `stream.height` do not throw exceptions
-    return {} as ffprobeStream;
+    return {};
   }
 }
 
@@ -321,7 +310,7 @@ function getBestStream(metadata: ffprobeJSON): ffprobeStream {
  * Return the duration from file by parsing metadata
  * @param metadata
  */
-function getFileDuration(metadata: ffprobeJSON): string {
+function getFileDuration(metadata): number {
   if (metadata?.streams?.[0]?.duration) {
 
     return metadata.streams[0].duration;
@@ -329,17 +318,10 @@ function getFileDuration(metadata: ffprobeJSON): string {
   } else if (metadata?.format?.duration) {
 
     return   metadata.format.duration;
-  } else {
-    return "0";
-  }
-}
 
-/**
- * Calculation of video bitrate in mb/s
- */
-function getBitrate(fileSize: number, duration: number): number {
-  const bitrate = ((fileSize / 1000) / duration) / 1000;
-  return Math.round(bitrate * 100) / 100;
+  } else {
+    return 0;
+  }
 }
 
 /**
@@ -351,13 +333,13 @@ function getBitrate(fileSize: number, duration: number): number {
  * ===========================================================================================
  * @param metadata
  */
- function getFps(metadata: ffprobeJSON): number {
-   if (metadata?.streams?.[0]?.r_frame_rate) {
-     const fps = metadata.streams[0].r_frame_rate;
-     const fpsParts = fps.split('/');
-     const evalFps = Number(fpsParts[0]) / Number(fpsParts[1]); // FPS is a fraction like `24000/1001`
+ function getFps(metadata): number {
+   if(metadata?.streams?.[0]?.r_frame_rate) {
+     let fps = metadata.streams[0].r_frame_rate
+     let evalFps = eval(fps.toString());
      return Math.round(evalFps);
-   } else {
+   }
+   else {
      return 0;
    }
  }
@@ -413,10 +395,10 @@ function hashFileAsync(pathToFile: string, stats: Stats): Promise<string> {
     let data: Buffer;
 
     if (fileSize < sampleThreshold) {
-      fs.readFile(pathToFile, (err, data2) => {
+      data = fs.readFile(pathToFile, (err, data) => {
         if (err) { throw err; }
         // append the file size to the data
-        const buf = Buffer.concat([data2, Buffer.from(fileSize.toString())]);
+        const buf = Buffer.concat([data, Buffer.from(fileSize.toString())]);
         // make the magic happen!
         const hash = hasher('md5').update(buf.toString('hex')).digest('hex');
         resolve(hash);
@@ -424,10 +406,10 @@ function hashFileAsync(pathToFile: string, stats: Stats): Promise<string> {
     } else {
       data = Buffer.alloc(sampleSize * 3);
       fs.open(pathToFile, 'r', (err, fd) => {
-        fs.read(fd, data, 0, sampleSize, 0, (err2, bytesRead, buffer) => { // read beginning of file
-          fs.read(fd, data, sampleSize, sampleSize, Math.floor(fileSize / 2), (err3, bytesRead2, buffer2) => {
-            fs.read(fd, data, sampleSize * 2, sampleSize, fileSize - sampleSize, (err4, bytesRead3, buffer3) => {
-              fs.close(fd, (err5) => {
+        fs.read(fd, data, 0, sampleSize, 0, (err, bytesRead, buffer) => { // read beginning of file
+          fs.read(fd, data, sampleSize, sampleSize, fileSize / 2, (err, bytesRead, buffer) => {
+            fs.read(fd, data, sampleSize * 2, sampleSize, fileSize - sampleSize, (err, bytesRead, buffer) => {
+              fs.close(fd, (err) => {
                 // append the file size to the data
                 const buf = Buffer.concat([data, Buffer.from(fileSize.toString())]);
                 // make the magic happen!
@@ -461,17 +443,17 @@ export function extractMetadataAsync(
       if (err) {
         reject();
       } else {
-        const metadata: ffprobeJSON = JSON.parse(data);
+        const metadata = JSON.parse(data);
         const stream = getBestStream(metadata);
         const fileDuration = getFileDuration(metadata);
         const realFps = getFps(metadata);
 
-        const duration = Math.round(parseInt(fileDuration, 10)) || 0;
+        const duration = Math.round(fileDuration) || 0;
         const origWidth = stream.width || 0; // ffprobe does not detect it on some MKV streams
         const origHeight = stream.height || 0;
 
-        fs.stat(filePath, (err2, fileStat) => {
-          if (err2) {
+        fs.stat(filePath, (err, fileStat) => {
+          if (err) {
             reject();
           }
 
@@ -485,7 +467,20 @@ export function extractMetadataAsync(
           imageElement.width     = origWidth;
           imageElement.fps       = realFps;
 
+
+          // WIP
+          if (codeRunningOnMac) {
+            const foundTags: string[] = readTags(filePath);
+            console.log('tags:', foundTags);
+
+            if (foundTags && foundTags.length) {
+              imageElement.tags = foundTags;
+            }
+          }
+
+
           hashFileAsync(filePath, fileStat).then((hash) => {
+
             imageElement.hash = hash;
             resolve(imageElement);
           });
@@ -495,6 +490,34 @@ export function extractMetadataAsync(
       }
     });
   });
+}
+
+/**
+ * If on Mac OS - read the file-system-added file tags and return them
+ * @param filename
+ */
+export function readTags(filename): string[] {
+
+  console.log('reading', filename);
+
+  const cmdArr = ['mdls', '-raw', '-name', 'kMDItemUserTags', '"' + filename + '"'];
+  const cmd = cmdArr.join(' ');
+
+  let foundTags: string[] = undefined;
+
+  exec(cmd, function (error, stdout, stderr) {
+    if (error) { console.error(error); }
+    if (stderr) { console.log(stderr); }
+    if (stdout) {
+      const tagz: string[] = stdout.toString().split(',');
+      console.log('Tags in file "' + filename + '": ' + tagz);
+
+      foundTags = tagz;
+    }
+
+  });
+
+  return foundTags;
 }
 
 /**
@@ -565,7 +588,6 @@ export function insertTemporaryFieldsSingle(element: ImageElement): ImageElement
   const resolution: ResolutionMeta = labelVideo(element.width, element.height);
   element.durationDisplay = getDurationDisplay(element.duration);
   element.fileSizeDisplay = getFileSizeDisplay(element.fileSize);
-  element.bitrate = getBitrate(element.fileSize, element.duration);
   element.resBucket = resolution.bucket;
   element.resolution = resolution.label;
   return element;
@@ -587,7 +609,7 @@ export function upgradeToVersion3(finalObject: FinalObject): void {
     };
     finalObject.version = 3;
     finalObject.images.forEach((element: ImageElement) => {
-      element.inputSource = 0;
+      element.inputSource = 0
       element.screens = computeNumberOfScreenshots(finalObject.screenshotSettings, element.duration);
       // update number of screens to account for too-many or too-few cases
       // as they were not handlede prior to version 3 release
